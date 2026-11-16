@@ -39,28 +39,19 @@ jobs:
           cp -r lib shell/lib
           cp -r assets shell/assets
           python3 tool/patch_android.py shell
-      - name: Force compileSdk 34
+      - name: Force compileSdk
         run: |
+          # فقط روی فایل app
           if [ -f shell/android/app/build.gradle.kts ]; then
             sed -i 's/compileSdk = .*/compileSdk = 34/' shell/android/app/build.gradle.kts || true
-            sed -i 's/compileSdkVersion .*/compileSdk = 34/' shell/android/app/build.gradle.kts || true
           fi
           if [ -f shell/android/app/build.gradle ]; then
             sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' shell/android/app/build.gradle || true
             sed -i 's/compileSdk .*/compileSdk 34/' shell/android/app/build.gradle || true
           fi
-          cat >> shell/android/build.gradle << 'EOF'
-
-          subprojects {
-              afterEvaluate { project ->
-                  if (project.hasProperty("android")) {
-                      android {
-                          compileSdkVersion 34
-                      }
-                  }
-              }
-          }
-          EOF
+          # اضافه کردن به gradle.properties
+          echo "android.compileSdkVersion=34" >> shell/android/gradle.properties
+          echo "android.compileSdk=34" >> shell/android/gradle.properties
       - name: Prepare signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
