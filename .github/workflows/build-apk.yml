@@ -39,6 +39,28 @@ jobs:
           cp -r lib shell/lib
           cp -r assets shell/assets
           python3 tool/patch_android.py shell
+      - name: Force compileSdk 34
+        run: |
+          if [ -f shell/android/app/build.gradle.kts ]; then
+            sed -i 's/compileSdk = .*/compileSdk = 34/' shell/android/app/build.gradle.kts || true
+            sed -i 's/compileSdkVersion .*/compileSdk = 34/' shell/android/app/build.gradle.kts || true
+          fi
+          if [ -f shell/android/app/build.gradle ]; then
+            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' shell/android/app/build.gradle || true
+            sed -i 's/compileSdk .*/compileSdk 34/' shell/android/app/build.gradle || true
+          fi
+          cat >> shell/android/build.gradle << 'EOF'
+
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty("android")) {
+                      android {
+                          compileSdkVersion 34
+                      }
+                  }
+              }
+          }
+          EOF
       - name: Prepare signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -72,7 +94,7 @@ jobs:
         with:
           name: omid-apk-arm64
           path: shell/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-      - uses: actions/upload-artifact@v4
+          - uses: actions/upload-artifact@v4
         with:
           name: omid-apk-armv7-old-phones
           path: shell/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
