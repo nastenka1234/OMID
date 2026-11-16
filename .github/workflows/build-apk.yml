@@ -35,10 +35,10 @@ jobs:
       - name: Overlay sources
         run: |
           cp pubspec.yaml shell/pubspec.yaml
-          # پین کردن نسخه‌های سازگار
           cat >> shell/pubspec.yaml << 'EOF'
 
           dependency_overrides:
+            wakelock_plus: 1.2.8
             package_info_plus: 8.0.2
           EOF
           rm -rf shell/lib shell/assets shell/test
