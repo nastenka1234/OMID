@@ -14,7 +14,7 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.5'
+          flutter-version: '3.22.3'
           channel: stable
           cache: true
       - name: Fetch Vazirmatn font
@@ -35,23 +35,14 @@ jobs:
       - name: Overlay sources
         run: |
           cp pubspec.yaml shell/pubspec.yaml
+          # پین کردن package_info_plus برای جلوگیری از خطای compileSdk
+          echo "" >> shell/pubspec.yaml
+          echo "dependency_overrides:" >> shell/pubspec.yaml
+          echo "  package_info_plus: 6.0.0" >> shell/pubspec.yaml
           rm -rf shell/lib shell/assets shell/test
           cp -r lib shell/lib
           cp -r assets shell/assets
           python3 tool/patch_android.py shell
-      - name: Force compileSdk
-        run: |
-          # فقط روی فایل app
-          if [ -f shell/android/app/build.gradle.kts ]; then
-            sed -i 's/compileSdk = .*/compileSdk = 34/' shell/android/app/build.gradle.kts || true
-          fi
-          if [ -f shell/android/app/build.gradle ]; then
-            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' shell/android/app/build.gradle || true
-            sed -i 's/compileSdk .*/compileSdk 34/' shell/android/app/build.gradle || true
-          fi
-          # اضافه کردن به gradle.properties
-          echo "android.compileSdkVersion=34" >> shell/android/gradle.properties
-          echo "android.compileSdk=34" >> shell/android/gradle.properties
       - name: Prepare signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
